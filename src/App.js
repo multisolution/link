@@ -3,43 +3,62 @@ import Layout from 'antd/lib/layout'
 import Table from 'antd/lib/table'
 import axios from 'axios'
 
-const columns = [
-  {
-    title: 'Mídia',
-    dataIndex: 'source',
-    key: 'source',
-  }, {
-    title: 'Campanha',
-    dataIndex: 'medium',
-    key: 'medium',
-  }, {
-    title: 'Source',
-    dataIndex: 'lsSource',
-    key: 'lsSource',
-  }, {
-    title: 'MID',
-    dataIndex: 'mid',
-    key: 'mid',
-  }, {
-    title: 'URL',
-    dataIndex: 'url',
-    key: 'url',
-    render: url => <a href={url} target="_blank">{url}</a>
-  }
-]
-
 class App extends React.Component {
   state = {
-    data: []
+    ready: false,
+    filters: {}
   }
+
+  data = []
+  dataSource = []
 
   async componentDidMount() {
     let { data } = await axios.get('data.json', { responseType: 'json' })
-    data = this.buildDataSource(data)
-    this.setState({ data })
+
+    this.data = data
+    this.dataSource = this.mountDataSource(data)
+
+    this.setState({
+      ready: true,
+      filters: {
+        source: window.location.hash ? [window.location.hash.slice(1)] : [],
+      }
+    })
   }
 
-  buildDataSource({ sources, campaigns }) {
+  mountColumns({ sources, campaigns }, { source = [] }) {
+    return [
+      {
+        title: 'Mídia',
+        dataIndex: 'source',
+        key: 'source',
+        filteredValue: source,
+        filters: sources.map(source => ({ text: source.title, value: source.title })),
+        onFilter: (value, record) => record.source === value,
+      }, {
+        title: 'Campanha',
+        dataIndex: 'medium',
+        key: 'medium',
+        filters: campaigns.map(campaign => ({ text: campaign.title, value: campaign.title })),
+        onFilter: (value, record) => record.medium === value,
+      }, {
+        title: 'Source',
+        dataIndex: 'lsSource',
+        key: 'lsSource',
+      }, {
+        title: 'MID',
+        dataIndex: 'mid',
+        key: 'mid',
+      }, {
+        title: 'URL',
+        dataIndex: 'url',
+        key: 'url',
+        render: url => <a href={url} target="_blank">{url}</a>
+      }
+    ]
+  }
+
+  mountDataSource({ sources, campaigns }) {
     const dataSource = []
 
     for (const campaign of campaigns) {
@@ -61,7 +80,19 @@ class App extends React.Component {
     return dataSource
   }
 
+  handleChange = (pagination, filters) => {
+    this.setState({ filters })
+  }
+
   render() {
+    const { ready, filters } = this.state
+
+    if (!ready) {
+      return null
+    }
+
+    const columns = this.mountColumns(this.data, filters)
+
     return (
       <Layout className="App">
         <Layout.Header className="Header">
@@ -70,10 +101,11 @@ class App extends React.Component {
 
         <Layout.Content className="Content">
           <Table
-            dataSource={this.state.data}
+            dataSource={this.dataSource}
             columns={columns}
             size="small"
             pagination={false}
+            onChange={this.handleChange}
           />
         </Layout.Content>
       </Layout>

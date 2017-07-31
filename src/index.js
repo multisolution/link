@@ -3,5 +3,8 @@ import { render } from 'react-dom'
 import App from './App'
 import registerServiceWorker from './registerServiceWorker'
 
-render(<App />, document.getElementById('root'))
+import LocaleProvider from 'antd/lib/locale-provider'
+import ptBR from 'antd/lib/locale-provider/pt_BR'
+
+render(<LocaleProvider locale={ptBR}><App /></LocaleProvider>, document.getElementById('root'))
 registerServiceWorker()
