@@ -1,12 +1,17 @@
 import React from 'react'
 import Layout from 'antd/lib/layout'
 import Table from 'antd/lib/table'
+import Form from 'antd/lib/form'
+import Button from 'antd/lib/button'
+import Input from 'antd/lib/input'
+import Icon from 'antd/lib/icon'
 import axios from 'axios'
 
 class App extends React.Component {
   state = {
     ready: false,
-    filters: {}
+    filters: {},
+    auth: false,
   }
 
   data = []
@@ -85,7 +90,7 @@ class App extends React.Component {
   }
 
   render() {
-    const { ready, filters } = this.state
+    const { ready, filters, auth } = this.state
 
     if (!ready) {
       return null
@@ -99,18 +104,51 @@ class App extends React.Component {
           <img src="assets/img/link.gif" width="100" height="100" alt="Link" />
         </Layout.Header>
 
-        <Layout.Content className="Content">
-          <Table
-            dataSource={this.dataSource}
-            columns={columns}
-            size="small"
-            pagination={false}
-            onChange={this.handleChange}
-          />
-        </Layout.Content>
+        {auth ?
+          <Layout.Content className="Content">
+            <Table
+              dataSource={this.dataSource}
+              columns={columns}
+              size="small"
+              pagination={false}
+              onChange={this.handleChange}
+            />
+          </Layout.Content>
+          : <WrappedLogin
+            onAuth={() => this.setState({ auth: true })}
+          />}
       </Layout>
     )
   }
 }
 
+class Login extends React.Component {
+  handlePasswordInputChange = (event) => {
+    const val = event.target.value.trim()
+
+    if (val === 'mu1ti@link') {
+      this.props.onAuth()
+    }
+  }
+
+  render() {
+    const { getFieldDecorator } = this.props.form
+
+    return (
+      <Layout.Content className="Content">
+        <Form onSubmit={this.handleSubmit} className="LoginForm" layout="inline">
+          <Form.Item>
+            {getFieldDecorator('password', {
+              rules: [{ required: true, message: 'Você não tem a senha?' }],
+            })(
+              <Input prefix={<Icon type="lock" style={{ fontSize: 13 }} />} type="password" placeholder="Senha" onChange={this.handlePasswordInputChange} />
+              )}
+          </Form.Item>
+        </Form>
+      </Layout.Content>
+    )
+  }
+}
+
+const WrappedLogin = Form.create()(Login)
 export default App
