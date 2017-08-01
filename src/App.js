@@ -68,7 +68,7 @@ class App extends React.Component {
 
     for (const campaign of campaigns) {
       for (const source of sources) {
-        const lsSource = source.hash + 'WZ' + campaign.hash
+        const lsSource = source.hash + campaign.hash
         const url = `${campaign.url}${campaign.url.indexOf('?') === -1 ? '?' : '&'}utm_source=${source.title}&utm_medium=${campaign.title}&source=${lsSource}&mID=${source.mid}`
 
         dataSource.push({
